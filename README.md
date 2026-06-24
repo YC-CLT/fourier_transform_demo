@@ -19,6 +19,7 @@ uv run python fourier_3d/plotly_spectrum.py
 ```
 
 功能：
+
 - 3D 坐标系 (t, f, A)：时间、频率、振幅
 - 正面/侧面/顶部 一键切换视角观察时域/频域/时频图
 - 数字输入框 + ◀/▶ 按钮 + 键盘上下箭头调节谐波 (1~99，仅奇次)
@@ -28,7 +29,11 @@ uv run python fourier_3d/plotly_spectrum.py
 
 ### Manim 场景 A：经典叠加动画
 
-上：时域波形（合成波逼近方波），下：频谱柱状图。输出 6 张关键帧 PNG：
+上：时域合成波形（逼近方波），下：频谱柱状图。输出 6 张关键帧 PNG：
+功能：
+- 上轴：时域波形叠加，谐波越多越接近方波
+- 下轴：频谱柱状图，仅奇次谐波有值
+- 6 个关键帧：1, 5, 9, 15, 25, 39 次谐波
 
 ```bash
 uv run manim -s fourier_manim/scene_superposition.py FourierSuperposition
@@ -38,7 +43,11 @@ uv run manim -s fourier_manim/scene_superposition.py FourierSuperposition
 
 ### Manim 场景 B：旋转向量动画
 
-左：旋转向量首尾相连，右：末端轨迹描出合成波形。输出 6 张关键帧 PNG：
+左：旋转向量（phasor）首尾相连，每根向量以各自频率旋转。右：末端轨迹实时描出合成波形。输出 6 张关键帧 PNG：
+功能：
+- 左图：谐波向量按各自频率旋转，直观展示频域叠加
+- 右图：向量末端随时间推移描出合成波形
+- 6 个关键帧：1, 5, 9, 15, 25, 39 次谐波
 
 ```bash
 uv run manim -s fourier_manim/scene_phasors.py FourierPhasors
@@ -50,7 +59,7 @@ uv run manim -s fourier_manim/scene_phasors.py FourierPhasors
 
 ## 项目结构
 
-```
+```bash
 manim/
 ├── fourier_core.py                  # 共享核心：傅里叶级数计算
 ├── fourier_3d/

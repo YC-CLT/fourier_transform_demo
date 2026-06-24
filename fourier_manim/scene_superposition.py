@@ -22,13 +22,20 @@ class FourierSuperposition(Scene):
 
             self.clear()
 
+            title = Text(
+                f"Fourier Series — N = {n_harm} Harmonics",
+                font_size=36,
+                color=WHITE,
+            ).to_edge(UP, buff=0.3)
+
             wave_axes = Axes(
                 x_range=[0, n_periods * 2 * PI, PI / 2],
                 y_range=[-1.8, 1.8, 0.5],
-                x_length=7,
-                y_length=2.5,
-                axis_config={"include_numbers": True},
-            ).to_edge(UP, buff=0.5)
+                x_length=6.5,
+                y_length=2.2,
+                axis_config={"include_numbers": True, "font_size": 18},
+            )
+            wave_axes.next_to(title, DOWN, buff=0.5)
             wave_label = wave_axes.get_axis_labels(
                 x_label="t", y_label="f(t)"
             )
@@ -40,12 +47,13 @@ class FourierSuperposition(Scene):
             )
 
             spec_axes = Axes(
-                x_range=[0, 2 * len(harmonics) + 2, 2],
+                x_range=[0, 2 * n_harm + 2, 2],
                 y_range=[0, 1.5, 0.5],
-                x_length=7,
-                y_length=2.5,
-                axis_config={"include_numbers": True},
-            ).to_edge(DOWN, buff=0.5)
+                x_length=6.5,
+                y_length=2.2,
+                axis_config={"include_numbers": True, "font_size": 18},
+            )
+            spec_axes.next_to(wave_axes, DOWN, buff=0.6)
             spec_label = spec_axes.get_axis_labels(
                 x_label="Harmonic", y_label="Amplitude"
             )
@@ -53,7 +61,7 @@ class FourierSuperposition(Scene):
             bars = VGroup()
             for h, a in zip(harmonics, amplitudes):
                 bar = Rectangle(
-                    width=0.6,
+                    width=0.5,
                     height=spec_axes.y_length * (a / 1.5),
                     fill_color=RED,
                     fill_opacity=0.8,
@@ -65,16 +73,9 @@ class FourierSuperposition(Scene):
                 )
                 bars.add(bar)
 
-            title = Text(
-                f"Fourier Series — N = {n_harm} Harmonics",
-                font_size=32,
-                color=WHITE,
-            ).to_edge(UP, buff=0.1)
-
-            self.add(wave_axes, wave_label, wave_graph)
+            self.add(title, wave_axes, wave_label, wave_graph)
             self.add(spec_axes, spec_label, bars)
-            self.add(title)
-            self.wait(0.1)
+            self.wait(1.0)
 
     def render_all(self):
         self.render(preview=True)
