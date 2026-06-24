@@ -61,7 +61,7 @@ class FourierSuperposition(Scene):
             )
 
             spec_axes = Axes(
-                x_range=[0, 2 * n_harm + 2, 2],
+                x_range=[0, n_harm + 3, 2],
                 y_range=[0, 1.5, 0.5],
                 x_length=6.5,
                 y_length=2.2,
@@ -72,11 +72,15 @@ class FourierSuperposition(Scene):
                 x_label="Harmonic", y_label="Amplitude"
             )
 
+            bar_width_data = 1.4
+            bar_width = spec_axes.c2p(bar_width_data, 0)[0] - spec_axes.c2p(0, 0)[0]
+
             bars = VGroup()
             for h, a in zip(harmonics, amplitudes):
+                bar_height = spec_axes.c2p(0, a)[1] - spec_axes.c2p(0, 0)[1]
                 bar = Rectangle(
-                    width=0.5,
-                    height=spec_axes.y_length * (a / 1.5),
+                    width=bar_width,
+                    height=bar_height,
                     fill_color=RED,
                     fill_opacity=0.8,
                     stroke_width=0,
