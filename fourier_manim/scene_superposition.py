@@ -29,16 +29,30 @@ class FourierSuperposition(Scene):
             ).to_edge(UP, buff=0.3)
 
             wave_axes = Axes(
-                x_range=[0, n_periods * 2 * PI, PI / 2],
+                x_range=[0, n_periods * 2 * PI, PI],
                 y_range=[-1.8, 1.8, 0.5],
                 x_length=6.5,
                 y_length=2.2,
-                axis_config={"include_numbers": True, "font_size": 18},
+                axis_config={"include_numbers": True, "font_size": 14},
+                x_axis_config={"include_numbers": False},
             )
             wave_axes.next_to(title, DOWN, buff=0.5)
             wave_label = wave_axes.get_axis_labels(
                 x_label="t", y_label="f(t)"
             )
+
+            pi_labels = VGroup()
+            for i in range(5):
+                val = i * PI
+                if val == 0:
+                    tex = "0"
+                elif val == PI:
+                    tex = r"\pi"
+                else:
+                    tex = rf"{i}\pi"
+                lbl = MathTex(tex, font_size=24)
+                lbl.next_to(wave_axes.c2p(val, 0), DOWN, buff=0.15)
+                pi_labels.add(lbl)
 
             wave_graph = wave_axes.plot_line_graph(
                 t, waveform,
@@ -51,7 +65,7 @@ class FourierSuperposition(Scene):
                 y_range=[0, 1.5, 0.5],
                 x_length=6.5,
                 y_length=2.2,
-                axis_config={"include_numbers": True, "font_size": 18},
+                axis_config={"include_numbers": True, "font_size": 14},
             )
             spec_axes.next_to(wave_axes, DOWN, buff=0.6)
             spec_label = spec_axes.get_axis_labels(
@@ -68,12 +82,12 @@ class FourierSuperposition(Scene):
                     stroke_width=0,
                 )
                 bar.move_to(
-                    spec_axes.c2p(h, a / 2),
+                    spec_axes.c2p(h, 0),
                     aligned_edge=DOWN,
                 )
                 bars.add(bar)
 
-            self.add(title, wave_axes, wave_label, wave_graph)
+            self.add(title, wave_axes, wave_label, wave_graph, pi_labels)
             self.add(spec_axes, spec_label, bars)
             self.wait(1.0)
 

@@ -71,7 +71,20 @@ class FourierPhasors(Scene):
                 x_length=5.5,
                 y_length=5.5,
                 axis_config={"include_numbers": True, "font_size": 14},
+                x_axis_config={"include_numbers": False},
             ).to_edge(RIGHT, buff=0.8)
+
+            pi_labels = VGroup()
+            for val, tex in [
+                (0, "0"),
+                (PI / 2, r"\frac{\pi}{2}"),
+                (PI, r"\pi"),
+                (3 * PI / 2, r"\frac{3\pi}{2}"),
+                (2 * PI, r"2\pi"),
+            ]:
+                lbl = MathTex(tex, font_size=28)
+                lbl.next_to(right_axes.c2p(val, 0), DOWN, buff=0.15)
+                pi_labels.add(lbl)
 
             left_label = Text("Phasors", font_size=20, color=GRAY).next_to(
                 left_axes, DOWN, buff=0.2
@@ -80,7 +93,7 @@ class FourierPhasors(Scene):
                 right_axes, DOWN, buff=0.2
             )
 
-            self.add(title, left_axes, right_axes, left_label, right_label)
+            self.add(title, left_axes, right_axes, left_label, right_label, pi_labels)
 
             t_tracker = ValueTracker(0)
 
