@@ -1,8 +1,13 @@
 # Fourier Transform Demo
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Deploy](https://github.com/YC-CLT/fourier_transform_demo/actions/workflows/deploy.yml/badge.svg)](https://github.com/YC-CLT/fourier_transform_demo/actions)
+
 [**English**](#english) &nbsp;|&nbsp; [**中文**](#中文)
 
 Visualize square wave synthesis via Fourier series using **Plotly 3D interactive plots** and **Manim animations**.
+
+> **Live Demo:** [YC-CLT.github.io/fourier_transform_demo/spectrum.html](https://YC-CLT.github.io/fourier_transform_demo/spectrum.html)
 
 ## Demo
 
@@ -133,6 +138,8 @@ More harmonics → closer to an ideal square wave. With a finite truncation, the
 <h2 id="中文">中文</h2>
 
 用 **Plotly 3D 交互图** + **Manim 动画** 两种方式可视化傅里叶级数中方波合成过程。
+
+> **在线演示:** [YC-CLT.github.io/fourier_transform_demo/spectrum.html](https://YC-CLT.github.io/fourier_transform_demo/spectrum.html)
 
 ## 环境准备
 
