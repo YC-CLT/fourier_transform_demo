@@ -47,7 +47,7 @@ def create_figure():
             [None, {"type": "bar"}],
             [None, {"type": "scatter"}],
         ],
-        subplot_titles=("3D 时频谱", "时域波形", "频谱", "时频图"),
+        subplot_titles=("3D Spectrogram", "Time Domain", "Spectrum", "Spectrogram"),
         horizontal_spacing=0.07,
         vertical_spacing=0.10,
         row_heights=[0.40, 0.30, 0.30],
@@ -105,11 +105,16 @@ def create_figure():
 
     for k in range(MAX_HARMONICS):
         n = 2 * k + 1
+        amp = amplitudes[k]
         fig.add_trace(
             go.Scatter(
-                x=t, y=np.full_like(t, n) + components[k] * 0.35,
+                x=[0, T_MAX],
+                y=[n, n],
                 mode="lines",
-                line=dict(width=1, color=colors[k]),
+                line=dict(
+                    width=2 + 4 * (amp / amplitudes[0]),
+                    color=colors[k],
+                ),
                 name="谐波 %d" % n,
                 showlegend=False,
                 hoverinfo="skip",
@@ -117,23 +122,7 @@ def create_figure():
             row=3, col=2,
         )
 
-    updatemenus = [
-        dict(
-            type="buttons",
-            direction="right",
-            x=0.0, y=1.18,
-            buttons=[
-                dict(method="relayout", label="正面(时域)",
-                     args=[{"scene.camera.eye": {"x": 0, "y": -2.5, "z": 0.1}}]),
-                dict(method="relayout", label="侧面(频域)",
-                     args=[{"scene.camera.eye": {"x": 2.5, "y": 0, "z": 0.1}}]),
-                dict(method="relayout", label="顶部(时频)",
-                     args=[{"scene.camera.eye": {"x": 0, "y": 0, "z": 2.5}}]),
-                dict(method="relayout", label="默认视角",
-                     args=[{"scene.camera.eye": {"x": 1.5, "y": -1.5, "z": 1.2}}]),
-            ],
-        ),
-    ]
+    updatemenus = []
 
     fig.update_layout(
         title=dict(
@@ -141,7 +130,6 @@ def create_figure():
             x=0.5, xanchor="center",
             font=dict(size=18, color="#c9d1d9"),
         ),
-        updatemenus=updatemenus,
         scene=dict(
             xaxis_title="时间 t",
             yaxis_title="频率 f",
@@ -197,10 +185,11 @@ def precompute_all_data():
         _, wf, comps = generate_waveform(k, N_SAMPLES, N_PERIODS)
         harm, amp = spectrum(k)
 
+        tf_x = [0.0, T_MAX]
         tf_y = []
         for i in range(k):
             n = 2 * i + 1
-            tf_y.append((np.full(N_SAMPLES, n) + comps[i] * 0.35).tolist())
+            tf_y.append([n, n])
 
         all_data[str(h)] = {
             "k": k,
@@ -210,6 +199,7 @@ def precompute_all_data():
             "harmonics": harm.tolist(),
             "amplitudes": amp.tolist(),
             "formula": build_laTeX(k),
+            "tf_x": tf_x,
             "tf_y": tf_y,
         }
 
@@ -227,11 +217,11 @@ def build_html():
     all_data_json = precompute_all_data()
 
     html = r"""<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>傅里叶级数 — 方波合成 3D 时频谱</title>
+<title>Fourier Series — Square Wave Synthesis</title>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script>
 window.MathJax = {
@@ -260,6 +250,8 @@ window.MathJax = {
   }
   #top-bar button:hover { background: #30363d; }
   #top-bar button.active { background: #da3633; border-color: #da3633; color: #fff; }
+  #top-bar button.cam { background: #1a3a5c; border-color: #1f6feb; }
+  #top-bar button.cam:hover { background: #1f6feb; }
   #formula-container {
     padding: 6px 20px; background: #161b22; color: #c9d1d9;
     text-align: center; font-size: 0.95em; min-height: 30px;
@@ -272,12 +264,19 @@ window.MathJax = {
 </head>
 <body>
 <div id="top-bar">
-  <label>谐波次数:</label>
-  <button id="btn-down" title="减少">&#9664;</button>
+  <label id="lbl-harmonic">Harmonics:</label>
+  <button id="btn-down" title="Decrease">&#9664;</button>
   <input type="number" id="harmonic-input" value="1" min="1" max="99" step="2">
-  <button id="btn-up" title="增加">&#9654;</button>
-  <button id="btn-play" title="播放/暂停">&#9654; 播放</button>
+  <button id="btn-up" title="Increase">&#9654;</button>
+  <button id="btn-play" title="Play/Pause">&#9654; Play</button>
+  <span style="color:#484f58;">|</span>
+  <button class="cam" id="btn-cam-front">Front(Time)</button>
+  <button class="cam" id="btn-cam-side">Side(Freq)</button>
+  <button class="cam" id="btn-cam-top">Top(TF)</button>
+  <button class="cam" id="btn-cam-default">Default</button>
   <span id="status-text" style="font-size:12px;color:#8b949e;"></span>
+  <span style="flex:1;"></span>
+  <button id="btn-lang" style="font-size:11px;padding:3px 8px;">中文</button>
 </div>
 <div id="formula-container"></div>
 <div id="plot-container">""" + plot_html + """</div>
@@ -291,16 +290,133 @@ window.MathJax = {
   var btnDown = document.getElementById('btn-down');
   var btnPlay = document.getElementById('btn-play');
   var statusEl = document.getElementById('status-text');
+  var lblHarmonic = document.getElementById('lbl-harmonic');
+  var btnLang = document.getElementById('btn-lang');
+  var btnCamFront = document.getElementById('btn-cam-front');
+  var btnCamSide = document.getElementById('btn-cam-side');
+  var btnCamTop = document.getElementById('btn-cam-top');
+  var btnCamDefault = document.getElementById('btn-cam-default');
 
   var MAX = """ + str(MAX_HARMONICS) + """;
   var N_TRACES = 2 * MAX + 3;
   var animTimer = null;
   var isPlaying = false;
   var animDirection = 1;
+  var curLang = 'en';
+
+  var I18N = {
+    en: {
+      title: "Fourier Series — Square Wave Synthesis 3D Spectrogram",
+      docTitle: "Fourier Series — Square Wave Synthesis",
+      subplot1: "3D Spectrogram",
+      subplot2: "Time Domain",
+      subplot3: "Spectrum",
+      subplot4: "Spectrogram",
+      sceneX: "Time t",
+      sceneY: "Frequency f",
+      sceneZ: "Amplitude A",
+      xaxis: "Time t",
+      yaxis: "Amplitude A",
+      xaxis2: "Frequency f (Harmonic Order)",
+      yaxis2: "Amplitude A",
+      xaxis3: "Time t",
+      yaxis3: "Harmonic Order",
+      camFront: "Front (Time)",
+      camSide: "Side (Freq)",
+      camTop: "Top (TF)",
+      camDefault: "Default",
+      labelHarmonic: "Harmonics:",
+      btnDownTitle: "Decrease",
+      btnUpTitle: "Increase",
+      btnPlayTitle: "Play/Pause",
+      btnPlay: "▶ Play",
+      btnPause: "⏸ Pause",
+      statusFormat: "Square wave fit: {0}%",
+      langBtn: "中文",
+    },
+    zh: {
+      title: "傅里叶级数 — 方波合成 3D 时频谱",
+      docTitle: "傅里叶级数 — 方波合成 3D 时频谱",
+      subplot1: "3D 时频谱",
+      subplot2: "时域波形",
+      subplot3: "频谱",
+      subplot4: "时频图",
+      sceneX: "时间 t",
+      sceneY: "频率 f",
+      sceneZ: "振幅 A",
+      xaxis: "时间 t",
+      yaxis: "振幅 A",
+      xaxis2: "频率 f (谐波次数)",
+      yaxis2: "振幅 A",
+      xaxis3: "时间 t",
+      yaxis3: "谐波次数",
+      camFront: "正面(时域)",
+      camSide: "侧面(频域)",
+      camTop: "顶部(时频)",
+      camDefault: "默认",
+      labelHarmonic: "谐波次数:",
+      btnDownTitle: "减少",
+      btnUpTitle: "增加",
+      btnPlayTitle: "播放/暂停",
+      btnPlay: "▶ 播放",
+      btnPause: "⏸ 暂停",
+      statusFormat: "方波近似度: {0}%",
+      langBtn: "EN",
+    },
+  };
+
+  function t(key) { return I18N[curLang][key] || key; }
+
+  function switchLang() {
+    curLang = (curLang === 'zh') ? 'en' : 'zh';
+    var d = I18N[curLang];
+
+    document.title = d.docTitle;
+    btnLang.textContent = d.langBtn;
+    lblHarmonic.textContent = d.labelHarmonic;
+    btnDown.title = d.btnDownTitle;
+    btnUp.title = d.btnUpTitle;
+    btnPlay.title = d.btnPlayTitle;
+    btnPlay.textContent = isPlaying ? d.btnPause : d.btnPlay;
+    btnCamFront.textContent = d.camFront;
+    btnCamSide.textContent = d.camSide;
+    btnCamTop.textContent = d.camTop;
+    btnCamDefault.textContent = d.camDefault;
+
+    var graphDiv = plotEl.querySelector('.js-plotly-plot') || plotEl;
+    Plotly.relayout(graphDiv, {
+      'title.text': d.title,
+      'scene.xaxis.title.text': d.sceneX,
+      'scene.yaxis.title.text': d.sceneY,
+      'scene.zaxis.title.text': d.sceneZ,
+      'xaxis.title.text': d.xaxis,
+      'yaxis.title.text': d.yaxis,
+      'xaxis2.title.text': d.xaxis2,
+      'yaxis2.title.text': d.yaxis2,
+      'xaxis3.title.text': d.xaxis3,
+      'yaxis3.title.text': d.yaxis3,
+      'annotations[0].text': d.subplot1,
+      'annotations[1].text': d.subplot2,
+      'annotations[2].text': d.subplot3,
+      'annotations[3].text': d.subplot4,
+    });
+    updateStatus();
+  }
+
+  btnLang.addEventListener('click', switchLang);
 
   function sigmoid(t) {
     var x = (t - 0.5) * 20;
     return 1 / (1 + Math.exp(-x));
+  }
+
+  function updateStatus() {
+    var v = getCurrentHarmonic();
+    var key = String(v);
+    var d = ALL_DATA[key];
+    if (!d) return;
+    var sm = sigmoid(d.k / MAX);
+    statusEl.textContent = I18N[curLang].statusFormat.replace('{0}', (sm * 100).toFixed(1));
   }
 
   function updateAll(harmonicValue) {
@@ -351,7 +467,7 @@ window.MathJax = {
 
     for (var i = 0; i < MAX; i++) {
       if (i < k) {
-        xAll[idx] = d.t;
+        xAll[idx] = d.tf_x;
         yAll[idx] = d.tf_y[i];
         visAll[idx] = true;
       } else {
@@ -378,12 +494,10 @@ window.MathJax = {
       'yaxis3.range': [0, yMaxFreq],
     });
 
-    var sm = sigmoid(k / MAX);
-    statusEl.textContent = '方波近似度: ' + (sm * 100).toFixed(1) + '%';
-
     formulaEl.innerHTML = '$$' + d.formula + '$$';
     if (window.MathJax) MathJax.typesetPromise([formulaEl]);
     inputEl.value = harmonicValue;
+    updateStatus();
   }
 
   function getCurrentHarmonic() {
@@ -411,7 +525,7 @@ window.MathJax = {
 
   function startPlay() {
     isPlaying = true;
-    btnPlay.textContent = '⏸ 暂停';
+    btnPlay.textContent = I18N[curLang].btnPause;
     btnPlay.classList.add('active');
     animDirection = 1;
     var v = getCurrentHarmonic();
@@ -430,10 +544,20 @@ window.MathJax = {
 
   function stopPlay() {
     isPlaying = false;
-    btnPlay.textContent = '▶ 播放';
+    btnPlay.textContent = I18N[curLang].btnPlay;
     btnPlay.classList.remove('active');
     if (animTimer) { clearInterval(animTimer); animTimer = null; }
   }
+
+  function setCamera(eye) {
+    var graphDiv = plotEl.querySelector('.js-plotly-plot') || plotEl;
+    Plotly.relayout(graphDiv, { 'scene.camera.eye': eye });
+  }
+
+  btnCamFront.addEventListener('click', function() { setCamera({x:0, y:-2.5, z:0.1}); });
+  btnCamSide.addEventListener('click', function() { setCamera({x:2.5, y:0, z:0.1}); });
+  btnCamTop.addEventListener('click', function() { setCamera({x:0, y:0, z:2.5}); });
+  btnCamDefault.addEventListener('click', function() { setCamera({x:1.5, y:-1.5, z:1.2}); });
 
   btnUp.addEventListener('click', function() { if (isPlaying) stopPlay(); stepUp(); });
   btnDown.addEventListener('click', function() { if (isPlaying) stopPlay(); stepDown(); });
@@ -449,7 +573,7 @@ window.MathJax = {
     else if (e.key === 'ArrowDown') { e.preventDefault(); if (isPlaying) stopPlay(); stepDown(); }
   });
 
-  setTimeout(function() { updateAll(1); }, 600);
+  setTimeout(function() { switchLang(); updateAll(1); }, 600);
 })();
 </script>
 </body>
