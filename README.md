@@ -7,7 +7,7 @@
 
 Visualize square wave synthesis via Fourier series using **Plotly 3D interactive plots** and **Manim animations**.
 
-> **Live Demo:** [YC-CLT.github.io/fourier_transform_demo/spectrum.html](https://YC-CLT.github.io/fourier_transform_demo/spectrum.html)
+> **Live Demo:** [YC-CLT.github.io/fourier_transform_demo](https://YC-CLT.github.io/fourier_transform_demo/)
 
 ## Demo
 
@@ -21,14 +21,14 @@ Visualize square wave synthesis via Fourier series using **Plotly 3D interactive
 
 **Scene A — Superposition**
 
-<video src="https://YC-CLT.github.io/fourier_transform_demo/FourierSuperposition.mp4" controls width="100%"></video>
+<a href="https://YC-CLT.github.io/fourier_transform_demo/FourierSuperposition.mp4"><img src="demo_FourierSuperposition.png" width="100%" alt="Scene A - Superposition"></a>
 
 </td>
 <td width="50%">
 
 **Scene B — Rotating Phasors**
 
-<video src="https://YC-CLT.github.io/fourier_transform_demo/FourierPhasors.mp4" controls width="100%"></video>
+<a href="https://YC-CLT.github.io/fourier_transform_demo/FourierPhasors.mp4"><img src="demo_FourierPhasors.png" width="100%" alt="Scene B - Rotating Phasors"></a>
 
 </td>
 </tr>
