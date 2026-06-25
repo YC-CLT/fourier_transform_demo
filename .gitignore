@@ -10,5 +10,18 @@ wheels/
 .venv
 
 .trae/
-media/
 docs/
+
+media/*
+!media/videos/
+media/videos/*
+!media/videos/scene_phasors/
+!media/videos/scene_superposition/
+media/videos/scene_phasors/*
+!media/videos/scene_phasors/480p15/
+media/videos/scene_phasors/480p15/*
+!media/videos/scene_phasors/480p15/FourierPhasors.mp4
+media/videos/scene_superposition/*
+!media/videos/scene_superposition/480p15/
+media/videos/scene_superposition/480p15/*
+!media/videos/scene_superposition/480p15/FourierSuperposition.mp4

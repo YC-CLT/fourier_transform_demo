@@ -1,7 +1,7 @@
 [project]
-name = "fourier-vis"
+name = "fourier-transform-demo"
 version = "0.1.0"
-description = "傅里叶级数方波合成可视化"
+description = "A visual demo of Fourier series synthesis|傅里叶级数合成可视化"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
