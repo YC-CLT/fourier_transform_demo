@@ -10,14 +10,11 @@ from fourier_core import spectrum
 class FourierPhasors(Scene):
     KEY_FRAMES = [1, 5, 9, 15, 25, 39]
 
-    def build_phasor_tip(self, t, harmonics, amplitudes, axes):
-        origin = axes.c2p(0, 0)
-        current = origin
+    def get_phasor_tip(self, t, harmonics, amplitudes, axes):
         cx, cy = 0.0, 0.0
         for h, amp in zip(harmonics, amplitudes):
-            angle = h * t
-            cx += amp * np.cos(angle)
-            cy += amp * np.sin(angle)
+            cx += amp * np.cos(h * t)
+            cy += amp * np.sin(h * t)
         return axes.c2p(cx, cy)
 
     def get_phasors(self, t, harmonics, amplitudes, axes):
@@ -25,6 +22,7 @@ class FourierPhasors(Scene):
         current = origin
         cx, cy = 0.0, 0.0
         arrows = VGroup()
+        colors = color_gradient([BLUE, RED], len(harmonics))
         for i, (h, amp) in enumerate(zip(harmonics, amplitudes)):
             angle = h * t
             cx += amp * np.cos(angle)
@@ -34,7 +32,7 @@ class FourierPhasors(Scene):
                 current, end,
                 buff=0,
                 stroke_width=3,
-                color=color_gradient([BLUE, RED], len(harmonics))[i],
+                color=colors[i],
                 max_tip_length_to_length_ratio=0.15,
             )
             arrows.add(arrow)
@@ -103,6 +101,43 @@ class FourierPhasors(Scene):
                 )
             )
 
+            def get_tip_dot():
+                t_now = t_tracker.get_value()
+                tip = self.get_phasor_tip(t_now, harmonics, amplitudes, left_axes)
+                dot = Dot(tip, radius=0.04, color=WHITE)
+                return dot
+
+            first_amp = amplitudes[0]
+            first_circle = Circle(
+                radius=left_axes.x_length * (first_amp / 4.0),
+                color=BLUE_C,
+                stroke_width=1.5,
+            )
+            first_circle.move_to(left_axes.c2p(0, 0))
+
+            def get_connector_line():
+                t_now = t_tracker.get_value()
+                tip = self.get_phasor_tip(t_now, harmonics, amplitudes, left_axes)
+                wy = 0.0
+                for h, amp in zip(harmonics, amplitudes):
+                    wy += amp * np.sin(h * t_now)
+                right_point = right_axes.c2p(t_now, wy)
+                line = Line(
+                    tip, right_point,
+                    color=WHITE,
+                    stroke_width=1.5,
+                )
+                return line
+
+            def get_wave_dot():
+                t_now = t_tracker.get_value()
+                wy = 0.0
+                for h, amp in zip(harmonics, amplitudes):
+                    wy += amp * np.sin(h * t_now)
+                point = right_axes.c2p(t_now, wy)
+                dot = Dot(point, radius=0.06, color=YELLOW)
+                return dot
+
             def get_trace():
                 t_now = t_tracker.get_value()
                 if t_now < 0.01:
@@ -121,9 +156,12 @@ class FourierPhasors(Scene):
                 )
                 return line
 
+            tip_dot = always_redraw(get_tip_dot)
+            connector = always_redraw(get_connector_line)
+            wave_dot = always_redraw(get_wave_dot)
             trace = always_redraw(get_trace)
 
-            self.add(phasors, trace)
+            self.add(phasors, tip_dot, first_circle, connector, wave_dot, trace)
             self.wait(0.3)
 
             max_t = 2 * PI
