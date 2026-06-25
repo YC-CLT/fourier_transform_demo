@@ -21,14 +21,14 @@ Visualize square wave synthesis via Fourier series using **Plotly 3D interactive
 
 **Scene A — Superposition**
 
-<video src="media/videos/scene_superposition/480p15/FourierSuperposition.mp4" controls width="100%"></video>
+<video src="https://YC-CLT.github.io/fourier_transform_demo/FourierSuperposition.mp4" controls width="100%"></video>
 
 </td>
 <td width="50%">
 
 **Scene B — Rotating Phasors**
 
-<video src="media/videos/scene_phasors/480p15/FourierPhasors.mp4" controls width="100%"></video>
+<video src="https://YC-CLT.github.io/fourier_transform_demo/FourierPhasors.mp4" controls width="100%"></video>
 
 </td>
 </tr>

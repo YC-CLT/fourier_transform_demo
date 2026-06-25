@@ -30,6 +30,8 @@ jobs:
         run: |
           mkdir -p _site
           cp fourier_3d/spectrum.html _site/index.html
+          cp media/videos/scene_superposition/480p15/FourierSuperposition.mp4 _site/
+          cp media/videos/scene_phasors/480p15/FourierPhasors.mp4 _site/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
